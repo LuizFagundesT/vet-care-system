@@ -1,0 +1,27 @@
+@startuml
+title Diagrama de Sequência - Enviar Notificação / Lembrete
+
+participant "Sistema VetCare" as S
+participant "Agenda" as AG
+participant "Prontuário" as P
+participant "Notificação\n(SendGrid)" as N
+
+S -> AG : verificarAgendamentosProximos(dataHoje)
+AG --> S : listaAgendamentosAmanha(agendamentos)
+
+loop [Para cada agendamento]
+  S -> N : enviarLembreteConsulta(tutorEmail, nomeAnimal, dataHora, veterinario)
+  N --> S : lembreteEnviado
+end
+
+S -> P : verificarVacinasVencendo(diasAntecedencia)
+P --> S : listaVacinasVencendo(vacinas)
+
+loop [Para cada vacina próxima do vencimento]
+  S -> N : enviarLembreteReforcoVacina(tutorEmail, nomeAnimal, nomeVacina, dataProximaDose)
+  N --> S : lembreteEnviado
+end
+
+S --> S : registrarLogNotificacoes(totalEnviadas)
+
+@enduml

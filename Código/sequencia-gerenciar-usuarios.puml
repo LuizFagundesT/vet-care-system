@@ -1,0 +1,45 @@
+@startuml
+title Diagrama de Sequência - Gerenciar Usuários e Permissões
+
+actor Administrador as AD
+participant "Sistema VetCare" as S
+participant "Usuário" as U
+participant "Notificação\n(SendGrid)" as N
+
+AD -> S : abrirGestaoUsuarios()
+S -> U : listarUsuarios()
+U --> S : listaUsuarios
+S --> AD : exibirListaUsuarios(listaUsuarios)
+
+AD -> S : selecionarOperacao(operacao)
+
+alt [Criar usuário]
+  AD -> S : informarNovoUsuario(nome, email, perfil, senha)
+  S -> U : verificarEmailExistente(email)
+
+  alt [E-mail já cadastrado]
+    U --> S : emailJaExistente
+    S --> AD : exibirMensagemEmailJaCadastrado()
+  else [E-mail disponível]
+    U --> S : emailDisponivel
+    S -> U : criarUsuario(nome, email, perfil, senhaHash)
+    U --> S : usuarioCriado(usuarioId)
+    S -> N : enviarCredenciaisAcesso(email, nome, perfil)
+    N --> S : emailEnviado
+    S --> AD : exibirConfirmacaoCriacao(usuarioId)
+  end
+
+else [Editar perfil / permissões]
+  AD -> S : informarAlteracoes(usuarioId, novoPerfil)
+  S -> U : atualizarPerfil(usuarioId, novoPerfil)
+  U --> S : perfilAtualizado
+  S --> AD : exibirConfirmacaoAlteracao()
+
+else [Desativar usuário]
+  AD -> S : confirmarDesativacao(usuarioId)
+  S -> U : desativarUsuario(usuarioId)
+  U --> S : usuarioDesativado
+  S --> AD : exibirConfirmacaoDesativacao()
+end
+
+@enduml

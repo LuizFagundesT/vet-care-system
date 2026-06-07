@@ -1,0 +1,45 @@
+@startuml
+title Diagrama de Sequência - Registrar Pagamento
+
+actor Recepcionista as R
+participant "Sistema VetCare" as S
+participant "Orçamento" as O
+participant "Pagamento" as PG
+participant "Processador\nPagamento (Stripe)" as ST
+participant "NotaFiscal" as NF
+participant "Notificação\n(SendGrid)" as N
+
+R -> S : iniciarPagamento(orcamentoId)
+S -> O : buscarOrcamento(orcamentoId)
+O --> S : dadosOrcamento(valorTotal, itens)
+S --> R : exibirResumoCobranca(valorTotal)
+
+R -> S : selecionarFormaPagamento(forma)
+R -> S : confirmarPagamento()
+
+S -> PG : registrarPagamento(orcamentoId, valor, forma)
+
+alt [Pagamento com cartão]
+  S -> ST : processarPagamentoCartao(dadosCartao, valor)
+  ST --> S : retornarResultado(transacaoId, status)
+
+  alt [Pagamento recusado]
+    S --> R : exibirMensagemPagamentoRecusado()
+  else [Pagamento aprovado]
+    PG --> S : pagamentoRegistrado(pagamentoId)
+    S -> NF : gerarNotaFiscal(pagamentoId, itens)
+    NF --> S : notaFiscalGerada(numero, pdfUrl)
+    S -> N : enviarComprovante(tutorEmail, pdfUrl)
+    N --> S : comprovanteEnviado
+    S --> R : exibirConfirmacaoPagamento(transacaoId, notaFiscal)
+  end
+else [Pagamento em dinheiro / Pix]
+  PG --> S : pagamentoRegistrado(pagamentoId)
+  S -> NF : gerarNotaFiscal(pagamentoId, itens)
+  NF --> S : notaFiscalGerada(numero, pdfUrl)
+  S -> N : enviarComprovante(tutorEmail, pdfUrl)
+  N --> S : comprovanteEnviado
+  S --> R : exibirConfirmacaoPagamento(pagamentoId, notaFiscal)
+end
+
+@enduml

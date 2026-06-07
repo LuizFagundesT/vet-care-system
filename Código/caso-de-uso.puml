@@ -1,0 +1,109 @@
+@startuml
+title Diagrama de Caso de Uso - VetCare System
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Recepcionista" as R
+actor "Veterinário" as V
+actor "Tutor / Cliente" as T
+actor "Administrador" as A
+actor "Sistema de Pagamento\n(Stripe)" as SP <<external>>
+actor "Sistema de Email\n(SendGrid)" as SE <<external>>
+
+rectangle "VetCare System" {
+
+  usecase "UC-01\nCadastrar Tutor" as UC01
+  usecase "UC-02\nCadastrar Animal" as UC02
+  usecase "UC-03\nAgendar Consulta" as UC03
+  usecase "UC-04\nCancelar Agendamento" as UC04
+  usecase "UC-05\nRegistrar Consulta" as UC05
+  usecase "UC-06\nPrescrever Medicamento" as UC06
+  usecase "UC-07\nSolicitar Exame" as UC07
+  usecase "UC-08\nRegistrar Resultado de Exame" as UC08
+  usecase "UC-09\nEmitir Prontuário" as UC09
+  usecase "UC-10\nRegistrar Vacinação" as UC10
+  usecase "UC-11\nControlar Estoque de Medicamentos" as UC11
+  usecase "UC-12\nRegistrar Venda de Produto" as UC12
+  usecase "UC-13\nEmitir Orçamento" as UC13
+  usecase "UC-14\nRegistrar Pagamento" as UC14
+  usecase "UC-15\nGerar Nota Fiscal" as UC15
+  usecase "UC-16\nEnviar Notificação / Lembrete" as UC16
+  usecase "UC-17\nConsultar Histórico do Animal" as UC17
+  usecase "UC-18\nGerar Relatório Financeiro" as UC18
+  usecase "UC-19\nGerenciar Usuários e Permissões" as UC19
+  usecase "UC-20\nCadastrar Serviço / Procedimento" as UC20
+  usecase "UC-21\nRegistrar Internação" as UC21
+  usecase "UC-22\nRegistrar Alta do Animal" as UC22
+  usecase "UC-23\nConsultar Agenda do Dia" as UC23
+
+  ' Interfaces fornecidas (provided)
+  interface "IAgendamento" as IAgend
+  interface "IConsulta" as IConsulta
+  interface "IPagamento" as IPagto
+  interface "INotificacao" as INotif
+
+  IAgend -- UC03
+  IConsulta -- UC05
+  IPagto -- UC14
+  INotif -- UC16
+
+  ' Interfaces requeridas (required)
+  interface "IProcessadorPagamento" as IProc
+  interface "IEnvioEmail" as IEmail
+
+  UC14 --( IProc
+  UC16 --( IEmail
+
+  IProc -- SP
+  IEmail -- SE
+}
+
+' Recepcionista
+R --> UC01
+R --> UC02
+R --> UC03
+R --> UC04
+R --> UC13
+R --> UC14
+R --> UC15
+R --> UC16
+R --> UC23
+
+' Veterinário
+V --> UC05
+V --> UC06
+V --> UC07
+V --> UC08
+V --> UC09
+V --> UC10
+V --> UC17
+V --> UC21
+V --> UC22
+V --> UC23
+
+' Tutor
+T --> UC17
+
+' Administrador
+A --> UC11
+A --> UC12
+A --> UC18
+A --> UC19
+A --> UC20
+A --> UC01
+A --> UC02
+
+' includes
+UC03 .> UC16 : <<include>>
+UC05 .> UC09 : <<include>>
+UC14 .> UC15 : <<include>>
+UC21 .> UC05 : <<include>>
+UC22 .> UC09 : <<include>>
+UC06 .> UC11 : <<include>>
+
+' extends
+UC04 .> UC03 : <<extend>>
+UC08 .> UC07 : <<extend>>
+
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+title Diagrama de Sequência - Registrar Consulta
+
+actor Veterinário as V
+participant "Sistema VetCare" as S
+participant "Animal" as A
+participant "Consulta" as C
+participant "Prontuário" as P
+participant "Estoque" as E
+
+V -> S : abrirConsulta(agendamentoId)
+S -> A : buscarDadosAnimal(animalId)
+A --> S : dadosAnimal
+S -> P : buscarHistoricoAnimal(animalId)
+P --> S : historicoProntuario
+S --> V : exibirFichaAnimalEHistorico()
+
+V -> S : informarSintomas(descricao)
+V -> S : informarDiagnostico(cid, descricao)
+V -> S : informarTratamento(descricao)
+
+S -> C : registrarConsulta(animalId, veterinarioId, sintomas, diagnostico, tratamento)
+C --> S : consultaRegistrada
+
+V -> S : prescreverMedicamento(medicamentoId, dose, frequencia, duracao)
+S -> E : verificarEstoque(medicamentoId)
+
+alt [Estoque insuficiente]
+  E --> S : estoqueInsuficiente
+  S --> V : alertarEstoqueInsuficiente()
+else [Estoque disponível]
+  E --> S : estoqueOk
+  S -> P : adicionarPrescricaoAoProntuario(prescricao)
+  P --> S : prescricaoAdicionada
+end
+
+V -> S : finalizarConsulta()
+S -> P : gerarEntradaProntuario(consultaId)
+P --> S : entradaGerada
+S --> V : exibirProntuarioAtualizado()
+
+@enduml

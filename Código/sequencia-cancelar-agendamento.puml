@@ -1,0 +1,31 @@
+@startuml
+title Diagrama de Sequência - Cancelar Agendamento
+
+actor Recepcionista as R
+participant "Sistema VetCare" as S
+participant "Agenda" as AG
+participant "Notificação\n(SendGrid)" as N
+
+R -> S : buscarAgendamento(agendamentoId)
+S -> AG : buscarAgendamento(agendamentoId)
+AG --> S : dadosAgendamento(tutorEmail, dataHora, status)
+
+alt [Agendamento não encontrado]
+  S --> R : exibirMensagemAgendamentoNaoEncontrado()
+else [Agendamento encontrado]
+  S --> R : exibirDetalhesAgendamento(dadosAgendamento)
+  R -> S : confirmarCancelamento(agendamentoId, motivo)
+
+  S -> AG : cancelarAgendamento(agendamentoId, motivo)
+  AG --> S : agendamentoCancelado
+
+  S -> AG : liberarHorario(veterinarioId, dataHora)
+  AG --> S : horarioLiberado
+
+  S -> N : enviarNotificacaoCancelamento(tutorEmail, dataHora, motivo)
+  N --> S : notificacaoEnviada
+
+  S --> R : exibirConfirmacaoCancelamento()
+end
+
+@enduml

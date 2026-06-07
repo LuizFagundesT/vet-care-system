@@ -1,0 +1,53 @@
+@startuml
+title Diagrama de Comunicação - Agendar Consulta - VetCare System
+
+object "recepcionista: Recepcionista" as R
+object "sistema: VetCare" as S
+object "tutor: Tutor" as T
+object "animal: Animal" as A
+object "agenda: Agendamento" as AG
+object "notificacao: Notificacao" as N
+
+R --> S : 1. iniciarAgendamento()
+R --> S : 2. informarTutor(cpf)
+S --> T : 3. buscarTutor(cpf)
+T --> S : 4. retornarDadosTutor()
+S --> A : 5. buscarAnimaisDoTutor(tutorId)
+A --> S : 6. retornarListaAnimais()
+R --> S : 7. selecionarAnimal(animalId)
+R --> S : 8. selecionarServico(servicoId)
+R --> S : 9. informarDataHora(dataHora)
+S --> AG : 10. verificarDisponibilidade(veterinarioId, dataHora)
+AG --> S : 11. retornarDisponibilidade()
+
+note on link
+  11.1: [horário indisponível] retornarHorarioOcupado()
+  11.2: [horário disponível] retornarHorarioLivre()
+end note
+
+S --> AG : 12. registrarAgendamento(tutorId, animalId, servicoId, dataHora)
+AG --> S : 13. confirmarAgendamentoCriado()
+S --> N : 14. enviarConfirmacao(tutorEmail, dataHora)
+N --> S : 15. retornarNotificacaoEnviada()
+S --> R : 16. exibirConfirmacaoAgendamento()
+S --> R : 17. [tutor bloqueado] exibirMensagemBloqueio()
+S --> R : 18. [horário ocupado] exibirHorariosDisponiveis()
+
+note bottom of AG
+  Regra: horário duplicado
+  para o mesmo veterinário
+  não é permitido.
+end note
+
+note bottom of T
+  Regra: tutor deve estar
+  cadastrado antes de agendar.
+end note
+
+note bottom of N
+  Regra: notificação enviada
+  por e-mail via SendGrid
+  ao confirmar agendamento.
+end note
+
+@enduml

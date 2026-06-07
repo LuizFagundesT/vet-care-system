@@ -1,0 +1,29 @@
+@startuml
+title Diagrama de Sequência - Registrar Resultado de Exame
+
+actor Veterinário as V
+participant "Sistema VetCare" as S
+participant "Prontuário" as P
+participant "Notificação\n(SendGrid)" as N
+
+V -> S : buscarExamePendente(exameId)
+S -> P : buscarExame(exameId)
+
+alt [Exame não encontrado]
+  P --> S : exameNaoEncontrado
+  S --> V : exibirMensagemExameNaoEncontrado()
+else [Exame encontrado]
+  P --> S : dadosExame(animalId, tutorEmail, tipoExame)
+  S --> V : exibirFormularioResultado(dadosExame)
+
+  V -> S : informarResultado(descricao, arquivoPdf)
+  S -> P : registrarResultado(exameId, descricao, arquivoPdf)
+  P --> S : resultadoRegistrado
+
+  S -> N : enviarResultadoTutor(tutorEmail, exameId, arquivoPdf)
+  N --> S : emailEnviado
+
+  S --> V : exibirConfirmacaoRegistro()
+end
+
+@enduml

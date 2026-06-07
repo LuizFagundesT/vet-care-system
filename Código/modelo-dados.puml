@@ -1,0 +1,198 @@
+@startuml
+title Modelo de Dados / DER - VetCare System
+
+entity "usuarios" {
+  * id_usuario : BIGINT <<PK>>
+  --
+  nome : VARCHAR(100)
+  email : VARCHAR(120)
+  senha : VARCHAR(255)
+  cpf : VARCHAR(14)
+  perfil : VARCHAR(20)
+  ativo : BOOLEAN
+}
+
+entity "tutores" {
+  * id_tutor : BIGINT <<PK>>
+  --
+  nome : VARCHAR(100)
+  cpf : VARCHAR(14)
+  telefone : VARCHAR(20)
+  email : VARCHAR(120)
+  endereco : VARCHAR(255)
+  data_cadastro : DATE
+}
+
+entity "animais" {
+  * id_animal : BIGINT <<PK>>
+  --
+  id_tutor : BIGINT <<FK>>
+  nome : VARCHAR(100)
+  especie : VARCHAR(50)
+  raca : VARCHAR(50)
+  sexo : VARCHAR(10)
+  data_nascimento : DATE
+  peso : DECIMAL(5,2)
+  cor : VARCHAR(50)
+  ativo : BOOLEAN
+}
+
+entity "servicos" {
+  * id_servico : BIGINT <<PK>>
+  --
+  nome : VARCHAR(100)
+  descricao : TEXT
+  preco : DECIMAL(10,2)
+  duracao_minutos : INT
+  ativo : BOOLEAN
+}
+
+entity "agendamentos" {
+  * id_agendamento : BIGINT <<PK>>
+  --
+  id_tutor : BIGINT <<FK>>
+  id_animal : BIGINT <<FK>>
+  id_usuario : BIGINT <<FK>>
+  id_servico : BIGINT <<FK>>
+  data_hora : DATETIME
+  status : VARCHAR(20)
+  observacoes : TEXT
+  data_criacao : DATETIME
+}
+
+entity "consultas" {
+  * id_consulta : BIGINT <<PK>>
+  --
+  id_agendamento : BIGINT <<FK>>
+  id_animal : BIGINT <<FK>>
+  id_veterinario : BIGINT <<FK>>
+  data_hora : DATETIME
+  sintomas : TEXT
+  diagnostico : TEXT
+  tratamento : TEXT
+  observacoes : TEXT
+  status_consulta : VARCHAR(20)
+}
+
+entity "prescricoes" {
+  * id_prescricao : BIGINT <<PK>>
+  --
+  id_consulta : BIGINT <<FK>>
+  id_medicamento : BIGINT <<FK>>
+  dose : VARCHAR(100)
+  frequencia : VARCHAR(100)
+  duracao_dias : INT
+  observacoes : TEXT
+}
+
+entity "exames" {
+  * id_exame : BIGINT <<PK>>
+  --
+  id_consulta : BIGINT <<FK>>
+  tipo : VARCHAR(100)
+  descricao : TEXT
+  data_solicitacao : DATE
+  data_resultado : DATE
+  resultado : TEXT
+  arquivo_url : VARCHAR(255)
+}
+
+entity "vacinacoes" {
+  * id_vacinacao : BIGINT <<PK>>
+  --
+  id_animal : BIGINT <<FK>>
+  id_veterinario : BIGINT <<FK>>
+  nome_vacina : VARCHAR(100)
+  data_aplicacao : DATE
+  data_reforco : DATE
+  lote : VARCHAR(50)
+  fabricante : VARCHAR(100)
+}
+
+entity "internacoes" {
+  * id_internacao : BIGINT <<PK>>
+  --
+  id_animal : BIGINT <<FK>>
+  id_veterinario : BIGINT <<FK>>
+  data_entrada : DATETIME
+  data_saida : DATETIME
+  motivo : TEXT
+  status : VARCHAR(20)
+  observacoes : TEXT
+}
+
+entity "medicamentos" {
+  * id_medicamento : BIGINT <<PK>>
+  --
+  nome : VARCHAR(100)
+  descricao : TEXT
+  unidade : VARCHAR(20)
+  quantidade_estoque : INT
+  estoque_minimo : INT
+  preco : DECIMAL(10,2)
+  ativo : BOOLEAN
+}
+
+entity "orcamentos" {
+  * id_orcamento : BIGINT <<PK>>
+  --
+  id_consulta : BIGINT <<FK>>
+  id_tutor : BIGINT <<FK>>
+  data_emissao : DATE
+  valor_total : DECIMAL(10,2)
+  status : VARCHAR(20)
+}
+
+entity "itens_orcamento" {
+  * id_item : BIGINT <<PK>>
+  --
+  id_orcamento : BIGINT <<FK>>
+  descricao : VARCHAR(200)
+  quantidade : INT
+  preco_unitario : DECIMAL(10,2)
+  subtotal : DECIMAL(10,2)
+}
+
+entity "pagamentos" {
+  * id_pagamento : BIGINT <<PK>>
+  --
+  id_orcamento : BIGINT <<FK>>
+  id_usuario : BIGINT <<FK>>
+  data_pagamento : DATE
+  valor_pago : DECIMAL(10,2)
+  forma_pagamento : VARCHAR(20)
+  transacao_id : VARCHAR(100)
+  status_pagamento : VARCHAR(20)
+}
+
+entity "notas_fiscais" {
+  * id_nota : BIGINT <<PK>>
+  --
+  id_pagamento : BIGINT <<FK>>
+  numero : VARCHAR(50)
+  data_emissao : DATE
+  valor_total : DECIMAL(10,2)
+  pdf_url : VARCHAR(255)
+}
+
+' Relacionamentos
+tutores ||--o{ animais : possui
+animais ||--o{ agendamentos : referenciado
+tutores ||--o{ agendamentos : solicita
+usuarios ||--o{ agendamentos : registra
+servicos ||--o{ agendamentos : refere-se
+agendamentos ||--o| consultas : origina
+animais ||--o{ consultas : submetido
+usuarios ||--o{ consultas : realiza
+consultas ||--o{ prescricoes : possui
+medicamentos ||--o{ prescricoes : usa
+consultas ||--o{ exames : solicita
+animais ||--o{ vacinacoes : recebe
+animais ||--o| internacoes : pode ter
+consultas ||--o| orcamentos : gera
+tutores ||--o{ orcamentos : possui
+orcamentos ||--|{ itens_orcamento : contém
+orcamentos ||--o| pagamentos : gera
+pagamentos ||--o| notas_fiscais : gera
+
+@enduml

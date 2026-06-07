@@ -1,0 +1,258 @@
+@startuml
+title Diagrama de Classes - VetCare System
+
+skinparam classAttributeIconSize 0
+
+' Interfaces fornecidas
+interface IAgendamento {
+  +agendar(tutorId: Long, animalId: Long, servicoId: Long, dataHora: LocalDateTime): Agendamento
+  +cancelar(agendamentoId: Long): void
+  +consultarAgendaDia(data: LocalDate): List<Agendamento>
+}
+
+interface IConsulta {
+  +registrar(agendamentoId: Long, dados: ConsultaDTO): Consulta
+  +prescrever(consultaId: Long, prescricao: PrescricaoDTO): Prescricao
+  +emitirProntuario(animalId: Long): Prontuario
+}
+
+interface IPagamento {
+  +registrar(orcamentoId: Long, forma: FormaPagamento, valor: BigDecimal): Pagamento
+  +emitirNotaFiscal(pagamentoId: Long): NotaFiscal
+}
+
+' Interfaces requeridas
+interface IProcessadorPagamento {
+  +processarCartao(dados: DadosCartao, valor: BigDecimal): ResultadoTransacao
+}
+
+interface IEnvioEmail {
+  +enviar(destinatario: String, assunto: String, corpo: String): void
+  +enviarAnexo(destinatario: String, assunto: String, pdfUrl: String): void
+}
+
+enum PerfilUsuario {
+  ADMINISTRADOR
+  RECEPCIONISTA
+  VETERINARIO
+}
+
+enum StatusAgendamento {
+  AGENDADO
+  CONFIRMADO
+  CANCELADO
+  CONCLUIDO
+}
+
+enum StatusConsulta {
+  EM_ANDAMENTO
+  FINALIZADA
+  CANCELADA
+}
+
+enum StatusPagamento {
+  PENDENTE
+  PAGO
+  CANCELADO
+  ESTORNADO
+}
+
+enum FormaPagamento {
+  DINHEIRO
+  CREDITO
+  DEBITO
+  PIX
+  BOLETO
+}
+
+enum StatusInternacao {
+  INTERNADO
+  ALTA_CONCEDIDA
+  OBITO
+}
+
+class Usuario {
+  -id: Long
+  -nome: String
+  -email: String
+  -senha: String
+  -cpf: String
+  -perfil: PerfilUsuario
+  -ativo: Boolean
+  +autenticar(email: String, senha: String): Boolean
+}
+
+class Tutor {
+  -id: Long
+  -nome: String
+  -cpf: String
+  -telefone: String
+  -email: String
+  -endereco: String
+  -dataCadastro: LocalDate
+  +buscarAnimais(): List<Animal>
+}
+
+class Animal {
+  -id: Long
+  -nome: String
+  -especie: String
+  -raca: String
+  -sexo: String
+  -dataNascimento: LocalDate
+  -peso: BigDecimal
+  -cor: String
+  -ativo: Boolean
+  +calcularIdade(): Integer
+  +obterUltimaConsulta(): Consulta
+}
+
+class Agendamento {
+  -id: Long
+  -dataHora: LocalDateTime
+  -status: StatusAgendamento
+  -observacoes: String
+  -dataCriacao: LocalDateTime
+  +cancelar(): void
+  +confirmar(): void
+  +concluir(): void
+}
+
+class Servico {
+  -id: Long
+  -nome: String
+  -descricao: String
+  -preco: BigDecimal
+  -duracaoMinutos: Integer
+  -ativo: Boolean
+}
+
+class Consulta {
+  -id: Long
+  -dataHora: LocalDateTime
+  -sintomas: String
+  -diagnostico: String
+  -tratamento: String
+  -observacoes: String
+  -status: StatusConsulta
+  +finalizar(): void
+}
+
+class Prescricao {
+  -id: Long
+  -dose: String
+  -frequencia: String
+  -duracaoDias: Integer
+  -observacoes: String
+}
+
+class Prontuario {
+  -id: Long
+  -dataEmissao: LocalDateTime
+  +gerarPdf(): byte[]
+}
+
+class Exame {
+  -id: Long
+  -tipo: String
+  -descricao: String
+  -datasolicitacao: LocalDate
+  -dataResultado: LocalDate
+  -resultado: String
+  -arquivoUrl: String
+}
+
+class Vacinacao {
+  -id: Long
+  -nomeVacina: String
+  -dataAplicacao: LocalDate
+  -dataRefoco: LocalDate
+  -lote: String
+  -fabricante: String
+}
+
+class Internacao {
+  -id: Long
+  -dataEntrada: LocalDateTime
+  -dataSaida: LocalDateTime
+  -motivoInternacao: String
+  -status: StatusInternacao
+  -observacoes: String
+  +concederAlta(): void
+}
+
+class Medicamento {
+  -id: Long
+  -nome: String
+  -descricao: String
+  -unidade: String
+  -quantidadeEstoque: Integer
+  -estoqueMinimo: Integer
+  -preco: BigDecimal
+  -ativo: Boolean
+  +verificarEstoque(): Boolean
+  +baixarEstoque(qtd: Integer): void
+}
+
+class Orcamento {
+  -id: Long
+  -dataEmissao: LocalDate
+  -valorTotal: BigDecimal
+  -status: String
+  +calcularTotal(): BigDecimal
+}
+
+class ItemOrcamento {
+  -id: Long
+  -descricao: String
+  -quantidade: Integer
+  -precoUnitario: BigDecimal
+  -subtotal: BigDecimal
+  +calcularSubtotal(): BigDecimal
+}
+
+class Pagamento {
+  -id: Long
+  -dataPagamento: LocalDate
+  -valorPago: BigDecimal
+  -forma: FormaPagamento
+  -transacaoId: String
+  -status: StatusPagamento
+  +validar(): Boolean
+}
+
+class NotaFiscal {
+  -id: Long
+  -numero: String
+  -dataEmissao: LocalDate
+  -valorTotal: BigDecimal
+  -pdfUrl: String
+  +gerar(): void
+}
+
+' Relacionamentos
+Usuario "1" -- "0..*" Agendamento : registra
+Tutor "1" *-- "1..*" Animal : possui
+Tutor "1" -- "0..*" Agendamento : solicita
+Animal "1" -- "0..*" Agendamento : referenciado em
+Agendamento "1" -- "0..1" Consulta : origina
+Agendamento "1" -- "1" Servico : refere-se a
+Usuario "1" -- "0..*" Consulta : realiza
+Animal "1" -- "0..*" Consulta : submetido a
+Consulta "1" -- "0..*" Prescricao : possui
+Consulta "1" -- "0..*" Exame : solicita
+Consulta "0..*" -- "1" Prontuario : compõe
+Animal "1" -- "1" Prontuario : possui
+Animal "1" -- "0..*" Vacinacao : recebe
+Animal "1" -- "0..1" Internacao : pode ter
+Prescricao "0..*" -- "1" Medicamento : usa
+Orcamento "1" *-- "1..*" ItemOrcamento : contém
+Orcamento "1" -- "0..1" Pagamento : gera
+Pagamento "1" -- "0..1" NotaFiscal : gera
+
+' Realizações de interfaces
+Agendamento ..|> IAgendamento
+Consulta ..|> IConsulta
+Pagamento ..|> IPagamento
+
+@enduml

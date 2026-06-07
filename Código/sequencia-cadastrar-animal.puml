@@ -1,0 +1,30 @@
+@startuml
+title Diagrama de Sequência - Cadastrar Animal
+
+actor Recepcionista as R
+participant "Sistema VetCare" as S
+participant "Tutor" as T
+participant "Animal" as A
+
+R -> S : iniciarCadastroAnimal()
+S --> R : solicitarIdentificacaoTutor()
+
+R -> S : informarTutor(cpfOuNome)
+S -> T : buscarTutor(cpfOuNome)
+
+alt [Tutor não encontrado]
+  T --> S : tutorNaoEncontrado
+  S --> R : exibirMensagemTutorNaoCadastrado()
+else [Tutor encontrado]
+  T --> S : dadosTutor(tutorId, nome)
+  S --> R : exibirFormularioCadastroAnimal(nomeTutor)
+
+  R -> S : informarDadosAnimal(nome, especie, raca, dataNascimento, sexo, peso)
+
+  S -> A : salvarAnimal(tutorId, nome, especie, raca, dataNascimento, sexo, peso)
+  A --> S : animalSalvo(animalId)
+
+  S --> R : exibirConfirmacaoCadastro(animalId)
+end
+
+@enduml

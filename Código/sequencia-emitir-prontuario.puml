@@ -1,0 +1,25 @@
+@startuml
+title Diagrama de Sequência - Emitir Prontuário
+
+actor Veterinário as V
+participant "Sistema VetCare" as S
+participant "Animal" as A
+participant "Prontuário" as P
+participant "Notificação\n(SendGrid)" as N
+
+V -> S : solicitarProntuario(animalId)
+S -> A : buscarDadosAnimal(animalId)
+A --> S : dadosAnimal(nome, especie, raca, tutorEmail)
+
+S -> P : buscarHistoricoCompleto(animalId)
+P --> S : historico(consultas, prescricoes, exames, vacinacoes, internacoes)
+
+S -> P : gerarProntuarioPdf(animalId, historico)
+P --> S : prontuarioPdf(pdfUrl)
+
+S -> N : enviarProntuarioTutor(tutorEmail, pdfUrl)
+N --> S : emailEnviado
+
+S --> V : exibirProntuario(pdfUrl)
+
+@enduml

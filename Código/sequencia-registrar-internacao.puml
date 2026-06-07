@@ -1,0 +1,38 @@
+@startuml
+title Diagrama de Sequência - Registrar Internação
+
+actor Veterinário as V
+participant "Sistema VetCare" as S
+participant "Animal" as A
+participant "Internação" as I
+participant "Prontuário" as P
+participant "Notificação\n(SendGrid)" as N
+
+V -> S : abrirRegistroInternacao(animalId)
+S -> A : buscarDadosAnimal(animalId)
+A --> S : dadosAnimal(nome, tutorEmail)
+S --> V : exibirFormularioInternacao(dadosAnimal)
+
+V -> S : informarInternacao(motivo, dataEntrada, observacoes)
+
+S -> I : verificarVagaDisponivel()
+
+alt [Sem vaga disponível]
+  I --> S : semVagaDisponivel
+  S --> V : exibirMensagemSemVaga()
+else [Vaga disponível]
+  I --> S : vagaDisponivel(vagaId)
+
+  S -> I : registrarInternacao(animalId, vagaId, motivo, dataEntrada, observacoes)
+  I --> S : internacaoRegistrada(internacaoId)
+
+  S -> P : adicionarEntradaInternacao(animalId, internacaoId)
+  P --> S : entradaAdicionada
+
+  S -> N : notificarTutorInternacao(tutorEmail, nomeAnimal, motivo, dataEntrada)
+  N --> S : notificacaoEnviada
+
+  S --> V : exibirConfirmacaoInternacao(internacaoId)
+end
+
+@enduml

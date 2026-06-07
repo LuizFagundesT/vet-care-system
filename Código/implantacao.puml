@@ -1,0 +1,27 @@
+@startuml
+title Diagrama de Implantação - VetCare System
+
+node "Dispositivo do Usuário" {
+  artifact "Navegador Web" as Browser
+}
+
+node "Servidor Front-end\n(Vercel)" {
+  artifact "Aplicação Web\nReact + Vite" as FE
+}
+
+node "Servidor Back-end\n(Railway)" {
+  artifact "API REST\nSpring Boot" as API
+}
+
+database "Banco de Dados\nPostgreSQL Cloud\n(Supabase)" as DB
+
+cloud "Sistema Externo\nStripe" as Stripe
+cloud "Sistema Externo\nSendGrid" as SendGrid
+
+Browser --> FE : HTTPS / Porta 443
+FE --> API : REST / HTTPS / JSON
+API --> DB : JDBC / Porta 5432
+API --> Stripe : API REST / HTTPS / Porta 443
+API --> SendGrid : API REST / HTTPS / Porta 443
+
+@enduml

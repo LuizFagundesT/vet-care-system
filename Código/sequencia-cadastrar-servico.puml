@@ -1,0 +1,42 @@
+@startuml
+title Diagrama de Sequência - Cadastrar Serviço / Procedimento
+
+actor Administrador as AD
+participant "Sistema VetCare" as S
+participant "Serviço" as SV
+
+AD -> S : abrirGestaoServicos()
+S -> SV : listarServicos()
+SV --> S : listaServicos
+S --> AD : exibirListaServicos(listaServicos)
+
+AD -> S : selecionarOperacao(operacao)
+
+alt [Cadastrar novo serviço]
+  AD -> S : informarNovoServico(nome, descricao, preco, duracaoMinutos, categoria)
+  S -> SV : verificarServicoExistente(nome)
+
+  alt [Serviço já cadastrado]
+    SV --> S : servicoJaExistente
+    S --> AD : exibirMensagemServicoJaCadastrado()
+  else [Serviço disponível]
+    SV --> S : nomeDisponivel
+    S -> SV : salvarServico(nome, descricao, preco, duracaoMinutos, categoria)
+    SV --> S : servicoSalvo(servicoId)
+    S --> AD : exibirConfirmacaoCadastro(servicoId)
+  end
+
+else [Editar serviço]
+  AD -> S : informarAlteracoes(servicoId, novosDados)
+  S -> SV : atualizarServico(servicoId, novosDados)
+  SV --> S : servicoAtualizado
+  S --> AD : exibirConfirmacaoEdicao()
+
+else [Desativar serviço]
+  AD -> S : confirmarDesativacao(servicoId)
+  S -> SV : desativarServico(servicoId)
+  SV --> S : servicoDesativado
+  S --> AD : exibirConfirmacaoDesativacao()
+end
+
+@enduml

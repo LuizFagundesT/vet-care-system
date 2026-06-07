@@ -1,0 +1,28 @@
+@startuml
+title Diagrama de Estados - Agendamento - VetCare System
+
+[*] --> Agendado : agendamento criado\npela recepcionista
+
+Agendado : Agendamento registrado no sistema.\nAguardando confirmação do tutor.\nNotificação de e-mail enviada.
+
+Agendado --> Confirmado : tutor confirma\npresença
+Agendado --> Cancelado : tutor cancela\nou prazo expirado
+
+Confirmado : Tutor confirmou presença.\nVeterinário notificado.
+
+Confirmado --> EmAndamento : veterinário\ninicia atendimento
+Confirmado --> Cancelado : cancelamento\nautorizado
+
+EmAndamento : Consulta em andamento.\nVeterinário registra sintomas\ne diagnóstico.
+
+EmAndamento --> Concluido : consulta\nfinalizada
+EmAndamento --> Cancelado : cancelamento\nautorizado (emergência)
+
+Concluido : Consulta encerrada.\nProntuário gerado.\nOrçamento emitido.
+
+Cancelado : Agendamento cancelado.\nHistórico mantido.\nHorário liberado na agenda.
+
+Concluido --> [*]
+Cancelado --> [*]
+
+@enduml

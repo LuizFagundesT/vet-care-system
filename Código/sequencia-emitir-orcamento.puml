@@ -1,0 +1,31 @@
+@startuml
+title Diagrama de Sequência - Emitir Orçamento
+
+actor Recepcionista as R
+participant "Sistema VetCare" as S
+participant "Tutor" as T
+participant "Orçamento" as O
+participant "Notificação\n(SendGrid)" as N
+
+R -> S : iniciarOrcamento()
+S --> R : solicitarIdentificacaoTutor()
+
+R -> S : informarTutor(cpfOuNome)
+S -> T : buscarTutor(cpfOuNome)
+T --> S : dadosTutor(tutorId, nome, email)
+
+S --> R : exibirFormularioOrcamento(nomeTutor)
+
+R -> S : adicionarItem(servicoOuProdutoId, quantidade)
+S --> R : exibirItemAdicionado(descricao, precoUnitario, subtotal)
+
+R -> S : confirmarOrcamento()
+S -> O : gerarOrcamento(tutorId, itens, valorTotal)
+O --> S : orcamentoGerado(orcamentoId, pdfUrl)
+
+S -> N : enviarOrcamentoTutor(email, orcamentoId, pdfUrl)
+N --> S : emailEnviado
+
+S --> R : exibirOrcamentoGerado(orcamentoId, pdfUrl)
+
+@enduml

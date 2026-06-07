@@ -1,0 +1,32 @@
+@startuml
+title Diagrama de Sequência - Prescrever Medicamento
+
+actor Veterinário as V
+participant "Sistema VetCare" as S
+participant "Estoque" as E
+participant "Prontuário" as P
+participant "Notificação\n(SendGrid)" as N
+
+V -> S : abrirPrescricao(consultaId)
+S --> V : exibirFormularioPrescricao()
+
+V -> S : informarMedicamento(medicamentoId, dose, frequencia, duracao)
+
+S -> E : verificarEstoque(medicamentoId)
+
+alt [Estoque insuficiente]
+  E --> S : estoqueInsuficiente(quantidadeAtual)
+  S --> V : alertarEstoqueInsuficiente(quantidadeAtual)
+else [Estoque disponível]
+  E --> S : estoqueOk
+
+  S -> P : registrarPrescricao(consultaId, medicamentoId, dose, frequencia, duracao)
+  P --> S : prescricaoRegistrada(prescricaoId)
+
+  S -> N : enviarPrescricaoTutor(tutorEmail, prescricaoId)
+  N --> S : emailEnviado
+
+  S --> V : exibirConfirmacaoPrescricao(prescricaoId)
+end
+
+@enduml

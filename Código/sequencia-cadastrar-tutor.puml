@@ -1,0 +1,30 @@
+@startuml
+title Diagrama de Sequência - Cadastrar Tutor
+
+actor Recepcionista as R
+participant "Sistema VetCare" as S
+participant "Tutor" as T
+participant "Notificação\n(SendGrid)" as N
+
+R -> S : iniciarCadastroTutor()
+S --> R : exibirFormularioCadastroTutor()
+
+R -> S : informarDadosTutor(nome, cpf, email, telefone, endereco)
+
+S -> T : verificarCpfExistente(cpf)
+
+alt [CPF já cadastrado]
+  T --> S : tutorJaExistente
+  S --> R : exibirMensagemTutorJaCadastrado()
+else [CPF disponível]
+  T --> S : cpfDisponivel
+  S -> T : salvarTutor(nome, cpf, email, telefone, endereco)
+  T --> S : tutorSalvo(tutorId)
+
+  S -> N : enviarBoasVindas(email, nome)
+  N --> S : emailEnviado
+
+  S --> R : exibirConfirmacaoCadastro(tutorId)
+end
+
+@enduml

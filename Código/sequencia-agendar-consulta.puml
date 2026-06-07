@@ -1,0 +1,45 @@
+@startuml
+title Diagrama de Sequência - Agendar Consulta
+
+actor Recepcionista as R
+participant "Sistema VetCare" as S
+participant "Tutor" as T
+participant "Animal" as A
+participant "Agenda" as AG
+participant "Notificação" as N
+
+R -> S : iniciarAgendamento()
+S --> R : solicitarDadosTutor()
+R -> S : informarTutor(cpfOuNome)
+
+S -> T : buscarTutor(cpfOuNome)
+T --> S : dadosTutorEncontrados
+
+alt [Tutor não encontrado]
+  S --> R : exibirMensagemTutorNaoCadastrado()
+else [Tutor encontrado]
+  S -> A : buscarAnimaisDoTutor(tutorId)
+  A --> S : listaAnimais
+
+  R -> S : selecionarAnimal(animalId)
+  R -> S : selecionarServico(servicoId)
+  R -> S : informarDataHora(dataHora)
+
+  S -> AG : verificarDisponibilidade(veterinarioId, dataHora)
+
+  alt [Horário indisponível]
+    AG --> S : horarioOcupado
+    S --> R : exibirMensagemHorarioOcupado()
+  else [Horário disponível]
+    AG --> S : horarioDisponivel
+    S -> AG : registrarAgendamento(tutorId, animalId, servicoId, dataHora)
+    AG --> S : agendamentoCriado
+
+    S -> N : enviarConfirmacaoAgendamento(tutorEmail, dataHora)
+    N --> S : notificacaoEnviada
+
+    S --> R : exibirConfirmacaoAgendamento()
+  end
+end
+
+@enduml

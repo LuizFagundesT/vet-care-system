@@ -1,0 +1,39 @@
+@startuml
+title Diagrama de Sequência - Registrar Venda de Produto
+
+actor Recepcionista as R
+participant "Sistema VetCare" as S
+participant "Tutor" as T
+participant "Estoque" as E
+participant "Pagamento" as PG
+
+R -> S : iniciarVenda()
+S --> R : solicitarIdentificacaoTutor()
+
+R -> S : informarTutor(cpfOuNome)
+S -> T : buscarTutor(cpfOuNome)
+T --> S : dadosTutor(tutorId, nome)
+
+S --> R : exibirFormularioVenda(nomeTutor)
+R -> S : adicionarProduto(produtoId, quantidade)
+
+S -> E : verificarEstoque(produtoId, quantidade)
+
+alt [Estoque insuficiente]
+  E --> S : estoqueInsuficiente(quantidadeAtual)
+  S --> R : exibirMensagemEstoqueInsuficiente(quantidadeAtual)
+else [Estoque disponível]
+  E --> S : estoqueOk(precoUnitario)
+  S --> R : exibirItemAdicionado(produto, quantidade, subtotal)
+
+  R -> S : confirmarVenda()
+  S -> E : baixarEstoque(produtoId, quantidade)
+  E --> S : estoqueBaixado
+
+  S -> PG : registrarVenda(tutorId, itens, valorTotal)
+  PG --> S : vendaRegistrada(vendaId)
+
+  S --> R : exibirConfirmacaoVenda(vendaId, valorTotal)
+end
+
+@enduml

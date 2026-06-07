@@ -1,0 +1,25 @@
+@startuml
+title Diagrama de Sequência - Solicitar Exame
+
+actor Veterinário as V
+participant "Sistema VetCare" as S
+participant "Consulta" as C
+participant "Prontuário" as P
+participant "Notificação\n(SendGrid)" as N
+
+V -> S : abrirSolicitacaoExame(consultaId)
+S -> C : buscarConsulta(consultaId)
+C --> S : dadosConsulta(animalId, tutorEmail)
+S --> V : exibirFormularioSolicitacaoExame()
+
+V -> S : informarExame(tipoExame, descricao, justificativa)
+
+S -> P : registrarSolicitacaoExame(consultaId, tipoExame, descricao, justificativa)
+P --> S : solicitacaoRegistrada(exameId)
+
+S -> N : enviarSolicitacaoTutor(tutorEmail, tipoExame, instrucoes)
+N --> S : emailEnviado
+
+S --> V : exibirConfirmacaoSolicitacao(exameId)
+
+@enduml

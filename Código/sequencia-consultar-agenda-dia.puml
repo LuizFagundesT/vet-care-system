@@ -1,0 +1,35 @@
+@startuml
+title Diagrama de Sequência - Consultar Agenda do Dia
+
+actor "Veterinário /\nRecepcionista" as U
+participant "Sistema VetCare" as S
+participant "Agenda" as AG
+participant "Animal" as A
+
+U -> S : abrirAgendaDia()
+S -> AG : buscarAgendamentosDoDia(dataHoje)
+AG --> S : listaAgendamentos(agendamentos)
+
+alt [Nenhum agendamento no dia]
+  S --> U : exibirMensagemAgendaVazia()
+else [Agendamentos encontrados]
+  S --> U : exibirAgendaDia(listaAgendamentos)
+
+  opt [Visualizar detalhes de um agendamento]
+    U -> S : selecionarAgendamento(agendamentoId)
+    S -> AG : buscarDetalhesAgendamento(agendamentoId)
+    AG --> S : detalhesAgendamento(tutorNome, animalId, servico, horario, status)
+    S -> A : buscarDadosAnimal(animalId)
+    A --> S : dadosAnimal(nome, especie, raca)
+    S --> U : exibirDetalhesAgendamento(detalhesAgendamento, dadosAnimal)
+  end
+
+  opt [Filtrar por veterinário]
+    U -> S : filtrarPorVeterinario(veterinarioId)
+    S -> AG : buscarAgendamentosPorVeterinario(dataHoje, veterinarioId)
+    AG --> S : agendamentosFiltrados
+    S --> U : exibirAgendaFiltrada(agendamentosFiltrados)
+  end
+end
+
+@enduml

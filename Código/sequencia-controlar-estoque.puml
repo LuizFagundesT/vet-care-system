@@ -1,0 +1,42 @@
+@startuml
+title Diagrama de Sequência - Controlar Estoque de Medicamentos
+
+actor Administrador as AD
+participant "Sistema VetCare" as S
+participant "Estoque" as E
+
+AD -> S : abrirGestaoEstoque()
+S -> E : listarMedicamentos()
+E --> S : listaMedicamentos(itens, quantidades)
+S --> AD : exibirListaEstoque(listaMedicamentos)
+
+AD -> S : selecionarOperacao(operacao)
+
+alt [Entrada de medicamento]
+  AD -> S : informarEntrada(medicamentoId, quantidade, lote, validade, fornecedor)
+  S -> E : registrarEntrada(medicamentoId, quantidade, lote, validade, fornecedor)
+  E --> S : entradaRegistrada(estoqueAtualizado)
+  S --> AD : exibirConfirmacaoEntrada(estoqueAtualizado)
+
+else [Saída de medicamento]
+  AD -> S : informarSaida(medicamentoId, quantidade, motivo)
+  S -> E : verificarEstoque(medicamentoId)
+
+  alt [Estoque insuficiente]
+    E --> S : estoqueInsuficiente(quantidadeAtual)
+    S --> AD : exibirMensagemEstoqueInsuficiente(quantidadeAtual)
+  else [Estoque suficiente]
+    E --> S : estoqueOk
+    S -> E : registrarSaida(medicamentoId, quantidade, motivo)
+    E --> S : saidaRegistrada(estoqueAtualizado)
+    S --> AD : exibirConfirmacaoSaida(estoqueAtualizado)
+  end
+
+else [Cadastrar novo medicamento]
+  AD -> S : informarNovoMedicamento(nome, descricao, unidade, estoqueMinimo)
+  S -> E : cadastrarMedicamento(nome, descricao, unidade, estoqueMinimo)
+  E --> S : medicamentoCadastrado(medicamentoId)
+  S --> AD : exibirConfirmacaoCadastro(medicamentoId)
+end
+
+@enduml

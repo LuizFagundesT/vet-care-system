@@ -1,0 +1,37 @@
+@startuml
+title Diagrama de Sequência - Registrar Alta do Animal
+
+actor Veterinário as V
+participant "Sistema VetCare" as S
+participant "Internação" as I
+participant "Prontuário" as P
+participant "Notificação\n(SendGrid)" as N
+
+V -> S : buscarInternacaoAtiva(animalId)
+S -> I : buscarInternacaoAtiva(animalId)
+
+alt [Internação não encontrada]
+  I --> S : internacaoNaoEncontrada
+  S --> V : exibirMensagemInternacaoNaoEncontrada()
+else [Internação encontrada]
+  I --> S : dadosInternacao(internacaoId, nomeAnimal, tutorEmail, dataEntrada)
+  S --> V : exibirDetalhesInternacao(dadosInternacao)
+
+  V -> S : informarAlta(dataAlta, observacoesAlta, orientacoesPos)
+
+  S -> I : registrarAlta(internacaoId, dataAlta, observacoesAlta)
+  I --> S : altaRegistrada
+
+  S -> I : liberarVaga(vagaId)
+  I --> S : vagaLiberada
+
+  S -> P : adicionarEntradaAlta(animalId, internacaoId, orientacoesPos)
+  P --> S : entradaAdicionada
+
+  S -> N : notificarTutorAlta(tutorEmail, nomeAnimal, dataAlta, orientacoesPos)
+  N --> S : notificacaoEnviada
+
+  S --> V : exibirConfirmacaoAlta()
+end
+
+@enduml

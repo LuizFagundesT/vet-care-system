@@ -1,0 +1,23 @@
+@startuml
+title Diagrama de Estados - Pagamento - VetCare System
+
+[*] --> Pendente : orçamento aprovado\npelo tutor
+
+Pendente : Orçamento gerado.\nAguardando pagamento\ndo tutor.
+
+Pendente --> Pago : pagamento\nrealizado com sucesso
+Pendente --> Cancelado : cancelamento\nautorizado
+
+Pago : Pagamento confirmado.\nNota fiscal emitida.\nComprovante enviado por e-mail.
+
+Pago --> Estornado : estorno\nsolicitado e autorizado
+
+Estornado : Valor devolvido ao tutor.\nNota fiscal cancelada.\nRegistro mantido no histórico.
+
+Cancelado : Pagamento cancelado.\nOrçamento invalidado.
+
+Pago --> [*]
+Estornado --> [*]
+Cancelado --> [*]
+
+@enduml

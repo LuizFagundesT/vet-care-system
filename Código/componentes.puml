@@ -1,0 +1,90 @@
+@startuml
+title Diagrama de Componentes - VetCare System
+
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment center
+
+actor "Recepcionista /\nAdministrador" as RA
+actor "Veterinário" as V
+
+rectangle "Camada de Apresentação" {
+  component "Front-end Web\n(React + Vite)" as FE {
+    component "Módulo de Agendamento" as MAgend
+    component "Módulo de Consultas"   as MConsult
+    component "Módulo de Pagamentos"  as MPag
+    component "Módulo de Estoque"     as MEstoque
+    component "Módulo de Relatórios"  as MRel
+    component "Tela de Login"         as MLogin
+  }
+}
+
+rectangle "Camada de Aplicação / API" {
+  component "API REST\n(Spring Boot)" as API {
+    component "AgendamentoController" as AC
+    component "ConsultaController"    as CC
+    component "PagamentoController"   as PC
+    component "AnimalController"      as AnC
+    component "TutorController"       as TC
+    component "RelatorioController"   as RC
+    component "AuthController"        as AuthC
+  }
+
+  component "Serviço de Agendamento"  as SAgend
+  component "Serviço de Consulta"     as SConsult
+  component "Serviço de Pagamento"    as SPag
+  component "Serviço de Estoque"      as SEstoque
+  component "Serviço de Notificação"  as SNotif
+  component "Serviço de Autenticação" as SAuth
+}
+
+rectangle "Camada de Domínio" {
+  component "Domínio: Tutor / Animal"        as DTA
+  component "Domínio: Consulta / Prontuário" as DCP
+  component "Domínio: Financeiro"            as DF
+  component "Domínio: Estoque"               as DE
+}
+
+database "Banco de Dados\nPostgreSQL" as DB
+
+cloud "Sistema Externo\nStripe"   as Stripe
+cloud "Sistema Externo\nSendGrid" as SendGrid
+
+' ── Atores ──────────────────────────────────────────────────────
+RA --> FE : HTTPS
+V  --> FE : HTTPS
+
+' ── Interfaces fornecidas/requeridas entre FE e API ─────────────
+MAgend   -(0- AC    : IAgendamento\n«HTTPS / REST+JSON»
+MConsult -(0- CC    : IConsulta\n«HTTPS / REST+JSON»
+MPag     -(0- PC    : IPagamento\n«HTTPS / REST+JSON»
+MRel     -(0- RC    : IRelatorio\n«HTTPS / REST+JSON»
+MLogin   -(0- AuthC : IUsuario\n«HTTPS / REST+JSON\nJWT Bearer»
+
+' ── Controladores → Serviços (mesma JVM, sem protocolo de rede) ─
+AC    --> SAgend
+CC    --> SConsult
+PC    --> SPag
+AnC   --> DTA
+TC    --> DTA
+RC    --> DF
+AuthC --> SAuth
+
+' ── Serviços → Domínio (mesma JVM, sem protocolo de rede) ───────
+SAgend   --> DTA
+SAgend   --> SNotif
+SConsult --> DCP
+SConsult --> SEstoque
+SPag     --> DF
+SEstoque --> DE
+
+' ── Domínio → Banco (TCP/IP, porta 5432) ────────────────────────
+DTA --> DB : «TCP/IP : 5432»
+DCP --> DB : «TCP/IP : 5432»
+DF  --> DB : «TCP/IP : 5432»
+DE  --> DB : «TCP/IP : 5432»
+
+' ── Interfaces requeridas/fornecidas com sistemas externos ───────
+SPag   -(0- Stripe   : IProcessadorPagamento\n«HTTPS / REST+JSON\nTLS 1.2+»
+SNotif -(0- SendGrid : IEnvioEmail\n«HTTPS / REST+JSON\nSMTP relay»
+
+@enduml

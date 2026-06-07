@@ -1,0 +1,30 @@
+@startuml
+title Diagrama de Sequência - Gerar Relatório Financeiro
+
+actor Administrador as AD
+participant "Sistema VetCare" as S
+participant "Pagamento" as PG
+participant "Orçamento" as O
+
+AD -> S : abrirRelatorioFinanceiro()
+S --> AD : exibirFiltrosRelatorio()
+
+AD -> S : informarFiltros(dataInicio, dataFim, tipo)
+
+S -> PG : buscarPagamentosPorPeriodo(dataInicio, dataFim)
+PG --> S : listaPagamentos(pagamentos, totalRecebido)
+
+S -> O : buscarOrcamentosAbertos(dataInicio, dataFim)
+O --> S : listaOrcamentosAbertos(pendentes, totalPendente)
+
+S -> S : calcularResumoFinanceiro(totalRecebido, totalPendente)
+
+S --> AD : exibirRelatorio(totalRecebido, totalPendente, listaPagamentos, listaInadimplentes)
+
+opt [Exportar relatório]
+  AD -> S : exportarRelatorio(formato)
+  S -> S : gerarArquivo(formato, dadosRelatorio)
+  S --> AD : disponibilizarDownload(arquivoUrl)
+end
+
+@enduml

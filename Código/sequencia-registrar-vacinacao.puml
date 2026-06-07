@@ -1,0 +1,37 @@
+@startuml
+title Diagrama de Sequência - Registrar Vacinação
+
+actor Veterinário as V
+participant "Sistema VetCare" as S
+participant "Animal" as A
+participant "Prontuário" as P
+participant "Estoque" as E
+participant "Notificação\n(SendGrid)" as N
+
+V -> S : abrirRegistroVacinacao(animalId)
+S -> A : buscarDadosAnimal(animalId)
+A --> S : dadosAnimal(nome, tutorEmail)
+S --> V : exibirFormularioVacinacao()
+
+V -> S : informarVacina(vacina, lote, dataAplicacao, dataProximaDose)
+
+S -> E : verificarEstoque(vacinaId)
+
+alt [Estoque insuficiente]
+  E --> S : estoqueInsuficiente
+  S --> V : alertarEstoqueInsuficiente()
+else [Estoque disponível]
+  E --> S : estoqueOk
+  S -> E : baixarEstoque(vacinaId, quantidade)
+  E --> S : estoqueBaixado
+
+  S -> P : registrarVacinacao(animalId, vacina, lote, dataAplicacao, dataProximaDose)
+  P --> S : vacinacaoRegistrada
+
+  S -> N : agendarLembreteReforco(tutorEmail, vacina, dataProximaDose)
+  N --> S : lembreteAgendado
+
+  S --> V : exibirConfirmacaoVacinacao()
+end
+
+@enduml

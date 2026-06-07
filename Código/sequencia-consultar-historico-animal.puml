@@ -1,0 +1,33 @@
+@startuml
+title Diagrama de Sequência - Consultar Histórico do Animal
+
+actor "Veterinário /\nRecepcionista" as U
+participant "Sistema VetCare" as S
+participant "Animal" as A
+participant "Prontuário" as P
+
+U -> S : buscarAnimal(nomeOuId)
+S -> A : buscarAnimal(nomeOuId)
+
+alt [Animal não encontrado]
+  A --> S : animalNaoEncontrado
+  S --> U : exibirMensagemAnimalNaoEncontrado()
+else [Animal encontrado]
+  A --> S : dadosAnimal(animalId, nome, especie, tutor)
+  S --> U : exibirDadosAnimal(dadosAnimal)
+
+  U -> S : solicitarHistorico(animalId)
+  S -> P : buscarHistoricoCompleto(animalId)
+  P --> S : historico(consultas, prescricoes, exames, vacinacoes, internacoes)
+
+  S --> U : exibirHistoricoAnimal(historico)
+
+  opt [Filtrar por período]
+    U -> S : filtrarPorPeriodo(dataInicio, dataFim)
+    S -> P : buscarHistoricoPorPeriodo(animalId, dataInicio, dataFim)
+    P --> S : historicoFiltrado
+    S --> U : exibirHistoricoFiltrado(historicoFiltrado)
+  end
+end
+
+@enduml
